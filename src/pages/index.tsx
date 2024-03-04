@@ -10,8 +10,8 @@ import camiseta3 from "../assets/camisetas/3.png";
 
 import "keen-slider/keen-slider.min.css";
 
-export default function Home() {
-  const [sliderRef] = useKeenSlider({
+export default function Home(props) {
+ const [sliderRef] = useKeenSlider({
     slides: {
       perView: 3,
       spacing: 48,
@@ -20,6 +20,8 @@ export default function Home() {
 
   return (
     <HomeContainer ref={sliderRef} className="keen-slider">
+      <pre>{JSON.stringify(props.list)}</pre>
+
       <Product className="keen-slider__slide">
         <Image
           src={camiseta1}
@@ -77,4 +79,16 @@ export default function Home() {
       </Product>
     </HomeContainer>
   )
+}
+
+export const getServerSideProps = async () => {
+  await new Promise(resolve => setTimeout(resolve, 2000))
+  
+  console.log("executou")
+
+  return {
+    props: {
+      list: [1, 2, 3]
+    }
+  }
 }
