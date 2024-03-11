@@ -1,4 +1,4 @@
-import { ImageContainer, ProductContainer, ProductDetails } from "../../styles/pages/Product";
+import { ImageContainer, ProductContainer, ProductDetails } from "../../styles/pages/product";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { stripe } from "../../lib/stripe";
 import Stripe from "stripe";
@@ -43,12 +43,12 @@ export default function Product({ product }: ProductProps) {
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  return {
+  return { 
     paths: [
-      { params: { id: 'prod_Pg1wmL0P6fiOMk' } }
+      { params: { id: 'prod_Pg1wmL0P6fiOMk'} }
     ],
     fallback: 'blocking',
-  }
+   }
 }
 
 export const getStaticProps: GetStaticProps<any, { id: string }> = async ({ params }) => {
