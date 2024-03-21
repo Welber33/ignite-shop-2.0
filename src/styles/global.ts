@@ -9,7 +9,7 @@ export const globalStyles = globalCss({
 
   body: {
     backgroundColor: '$gray900',
-    color: "$gray100",
+    color: '$gray100',
     '-webkit-font-smoothing': 'antialiased',
   },
 
@@ -17,4 +17,12 @@ export const globalStyles = globalCss({
     fontFamily: 'Roboto',
     fontWeight: 400,
   },
+
+  a: {
+    color: 'inherit'
+  },
+
+  button: {
+    cursor: 'pointer'
+  }
 }) 
