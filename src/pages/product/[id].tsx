@@ -7,45 +7,22 @@ import { useRouter } from "next/router";
 import axios from "axios";
 import { useState } from "react";
 import Head from "next/head";
+import { useCart } from "../../hooks/useCart";
+import { IProduct } from "../../contexts/CartContext";
 
 interface ProductProps {
-  product: {
-    id: string;
-    name: string;
-    imageUrl: string;
-    price: string;
-    description: string;
-    defaultPriceId: string;
-  }
+  product: IProduct;
 }
 
 export default function Product({ product }: ProductProps) {
-  const [
-    isCreatingCheckoutSession,
-    setIsCreatingCheckoutSession
-  ] = useState(false);
-
   const { isFallback } = useRouter();
+
+  const { addToCart, checkItemExistsInCart } = useCart();
+
+  const itemAlreadyInCart = checkItemExistsInCart(product.id);
 
   if (isFallback) {
     return <p>Loading...</p>
-  }
-
-  async function handleBuyProduct() {
-    try {
-      const response = await axios.post('/api/checkout', {
-        priceId: product.defaultPriceId
-      });
-
-      const { checkoutUrl } = response.data;
-
-      window.location.href = checkoutUrl
-    } catch (error: any) {
-      //Conectar com uma ferramenta de observabilidade (Datadog / Sentry)
-      setIsCreatingCheckoutSession(false);
-
-      alert('falha ao redirecionar ao checkout')
-    }
   }
 
   return (
@@ -65,8 +42,11 @@ export default function Product({ product }: ProductProps) {
 
           <p>{product.description}</p>
 
-          <button disabled={isCreatingCheckoutSession} onClick={handleBuyProduct}>
-            Comprar agora
+          <button
+            disabled={itemAlreadyInCart}
+            onClick={() => addToCart(product)}
+          >
+            {itemAlreadyInCart ? 'Produto já está no carrinho' : 'Adicionar ao carrinho'}
           </button>
         </ProductDetails>
       </ProductContainer>
@@ -102,6 +82,7 @@ export const getStaticProps: GetStaticProps<any, { id: string }> = async ({ para
           style: 'currency',
           currency: 'BRL'
         }).format(price.unit_amount / 100),
+        numberPrice: price.unit_amount / 100,
         description: product.description,
         defaultPriceId: price.id
       }

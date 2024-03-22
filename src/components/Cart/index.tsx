@@ -6,8 +6,36 @@ import { CartButton } from "../CartButton";
 import { CartClose, CartContent, CartFinalization, CartProduct, CartProductDetails, CartProductImage, FinalizationDetails } from "./styles";
 import { X } from "phosphor-react";
 import Image from "next/image";
+import { useCart } from "../../hooks/useCart";
+import { useState } from "react";
+import axios from "axios";
 
 export function Cart() {
+  const [isCreatingCheckoutSession, setIsCreatingCheckoutSession] = useState(false)
+  const { cartItems, removeCartItem, cartTotal } = useCart();
+  const cartQuantity = cartItems.length;
+
+  const formattedCartTotal = new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(cartTotal);
+
+  async function handleCheckout() {
+    try {
+      setIsCreatingCheckoutSession(true);
+
+      const response = await axios.post('/api/checkout', {
+        products: cartItems,
+      });
+
+      const { checkoutUrl } = response.data;
+
+      window.location.href = checkoutUrl;
+    } catch (error: any) {
+      alert('Falha no redirecionamento para checkout no stripe!')
+    }
+  }
+
   return (
     <Dialog.Root>
       <Dialog.Trigger asChild>
@@ -23,38 +51,51 @@ export function Cart() {
           <h2>Sacola de compras</h2>
 
           <section>
-            {/*<p>Parece que seu carrinho está vazio!</p> */}
+            {cartQuantity <= 0 && <p>Parece que seu carrinho está vazio!</p>}
 
-            <CartProduct>
-              <CartProductImage>
-                <Image
-                  width={100}
-                  height={93}
-                  src={shirtIgniteLab}
-                  alt=""
-                />
-              </CartProductImage>
+            {cartItems.map(cartItem => (
+              <CartProduct key={cartItem.id}>
+                <CartProductImage>
+                  <Image
+                    width={100}
+                    height={93}
+                    src={cartItem.imageUrl}
+                    alt=""
+                  />
+                </CartProductImage>
 
-              <CartProductDetails>
-                <p>Produto 1</p>
-                <strong>R$ 50.00</strong>
-                <button>Remover</button>
-              </CartProductDetails>
-            </CartProduct>
+                <CartProductDetails>
+                  <p>{cartItem.name}</p>
+                  <strong>{cartItem.price}</strong>
+                  <button onClick={() => removeCartItem(cartItem.id)}>Remover</button>
+                </CartProductDetails>
+              </CartProduct>
+            ))}
+
           </section>
 
           <CartFinalization>
             <FinalizationDetails>
               <div>
                 <span>Quantidade</span>
-                <p>2 itens</p>
+                <p>
+                  {cartQuantity === 1 ?
+                    `${cartQuantity} item` :
+                    `${cartQuantity} itens`
+                  }
+                </p>
               </div>
               <div>
                 <span>Valor total</span>
-                <p>R$ 100.00</p>
+                <p>{formattedCartTotal}</p>
               </div>
             </FinalizationDetails>
-            <button>Finalizar compra</button>
+            <button
+              disabled={isCreatingCheckoutSession || cartQuantity <= 0}
+              onClick={handleCheckout}
+            >
+              Finalizar compra
+            </button>
           </CartFinalization>
 
         </CartContent>
